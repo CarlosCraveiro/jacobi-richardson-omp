@@ -4,6 +4,8 @@ mkShell {
   buildInputs = [
     gcc
     gnumake
+    valgrind
+    gdb
   ];
 
   shellHook = ''

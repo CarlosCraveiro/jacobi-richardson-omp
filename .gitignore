@@ -1,2 +1,6 @@
 # Ignores C object files
 *.o
+
+# Binaries
+jacobipar
+jacobiseq
