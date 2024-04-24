@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/param.h>
 
 void matrix_copy(matrix_t* Copy, const matrix_t* Reference) {
     for(int i = 0; i < Copy->lines; i++) {
@@ -49,6 +50,31 @@ matrix_t init_matrix(int lines, int columns, double init_value) {
         A.data[i] = malloc(lines * sizeof(double)); // NxN
         for(int j = 0; j < columns; j++) {
             A.data[i][j] = init_value;
+        }
+    }
+    return A;
+}
+
+matrix_t init_rand_matrix(int lines, int columns) {
+    // Definition of the matrix
+    
+    matrix_t A;
+
+    A.data = malloc(lines * sizeof(double *)); // NxUninitialize 
+    A.lines = lines;
+    A.columns = columns;
+    for(int i = 0; i < lines; i++) {
+        A.data[i] = malloc(lines * sizeof(double)); // NxN
+        int diag_int = rand();
+        int upper_limit = diag_int / MAX(lines, columns);
+        for(int j = 0; j < columns; j++) {
+            if(i == j) {
+                A.data[i][j] = (diag_int / 1000.0f);
+            } else {
+                double gen_value = (rand() % upper_limit) / 1000.0f;
+
+                A.data[i][j] = gen_value;
+            } 
         }
     }
     return A;

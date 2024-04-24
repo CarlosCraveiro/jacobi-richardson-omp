@@ -4,3 +4,6 @@ all:
 clean:
 	rm -rf jacobiseq
 	rm -rf jacobipar
+
+run:
+	./jacobiseq 3 42

@@ -7,7 +7,7 @@
 
 #define THRESHOLD 0.001
 
-double max(const double* array, int size) {
+double max(const double* restrict array, int size) {
     double greater = array[0];
 
     for(int i = 1; i < size; i++) {
@@ -63,23 +63,22 @@ matrix_t gaussjacobi(const matrix_t* A, const matrix_t* B) {
 }
 
 int main(int argc, char* argv[]) {
-    matrix_t A = init_matrix(ORDER, ORDER, 0.0);
-    matrix_t B = init_matrix(ORDER, 1, 0.0);
+    if(argc != 3) {
+        printf("Incorrect number of arguments!\n");
+        printf("Correct Usage:\n");
+        printf("$ ./jacobiseq <N> <seed>\n");
+        printf("\tN - Matrix order\n");
+        printf("\tseed - seed for the pseudorandom number generator\n");
+        exit(-1);
+    }
+    int seed = atoi(argv[2]);
+    int order = atoi(argv[1]);
+    printf("test %d\n", seed);
+    srand(seed);
     
-    A.data[0][0] = 4.0;
-    A.data[0][1] = 2.0;
-    A.data[0][2] = 1.0;
-    A.data[1][0] = 1.0;
-    A.data[1][1] = 3.0;
-    A.data[1][2] = 1.0;
-    A.data[2][0] = 2.0;
-    A.data[2][1] = 3.0;
-    A.data[2][2] = 6.0;
-
-    B.data[0][0] = 7.0;
-    B.data[1][0] = -8.0;
-    B.data[2][0] = 6.0;
-
+    matrix_t A = init_rand_matrix(order, order);
+    matrix_t B = init_rand_matrix(order, 1);
+    
     print_matrix(&A, 0);
     print_matrix(&B, 0);
 

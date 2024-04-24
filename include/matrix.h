@@ -10,6 +10,8 @@ struct Matrix {
 
 void matrix_copy(matrix_t* Copy, const matrix_t* Reference);
 
+matrix_t init_rand_matrix(int lines, int columns);
+
 void print_matrix(matrix_t* M, int is_array);
 
 matrix_t init_matrix(int lines, int columns, double init_value); 
