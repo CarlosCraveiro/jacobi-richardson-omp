@@ -3,11 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#define ORDER 3
 
 #define THRESHOLD 0.001
 
-double max(const double* restrict array, int size) {
+double max(const double* array, int size) {
     double greater = array[0];
 
     for(int i = 1; i < size; i++) {
@@ -52,8 +51,8 @@ matrix_t gaussjacobi(const matrix_t* A, const matrix_t* B) {
 
             Xk.data[i][0] = xi / A->data[i][i];
         }
-        printf("Iteration %d\n", itr++);
-        print_matrix(&Xk, 1);
+        //printf("Iteration %d\n", itr++);
+        //print_matrix(&Xk, 1);
     
     } while(gaussjacobi_error(&Xk, &Xkprev) > THRESHOLD);
     
@@ -79,8 +78,8 @@ int main(int argc, char* argv[]) {
     matrix_t A = init_rand_matrix(order, order);
     matrix_t B = init_rand_matrix(order, 1);
     
-    print_matrix(&A, 0);
-    print_matrix(&B, 0);
+    //print_matrix(&A, 0);
+    //print_matrix(&B, 0);
 
     matrix_t C = gaussjacobi(&A, &B);
     
@@ -91,4 +90,6 @@ int main(int argc, char* argv[]) {
     free_matrix(C);
     free_matrix(A);
     free_matrix(B);
- };
+
+    return 0;
+ }

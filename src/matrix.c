@@ -71,8 +71,7 @@ matrix_t init_rand_matrix(int lines, int columns) {
             if(i == j) {
                 A.data[i][j] = (diag_int / 1000.0f);
             } else {
-                double gen_value = (rand() % upper_limit) / 1000.0f;
-
+                double gen_value = ((rand() % (2*upper_limit)) - upper_limit) / 1000.0f;
                 A.data[i][j] = gen_value;
             } 
         }
