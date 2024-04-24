@@ -4,3 +4,6 @@
 # Binaries
 jacobipar
 jacobiseq
+
+# Test files
+.out
