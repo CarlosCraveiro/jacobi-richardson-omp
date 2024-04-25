@@ -6,4 +6,4 @@ jacobipar
 jacobiseq
 
 # Test files
-.out
+*.out
