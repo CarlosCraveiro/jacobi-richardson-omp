@@ -1,5 +1,5 @@
 all:
-	gcc src/jacobiseq.c src/matrix.c -I include/ -o jacobiseq
+	gcc src/jacobiseq.c src/matrix.c -I include/ -fopenmp -O3 -o jacobiseq
 	gcc src/jacobipar.c src/matrix.c -I include/ -fopenmp -O3 -o jacobipar
 
 clean:

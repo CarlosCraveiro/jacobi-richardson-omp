@@ -8,6 +8,8 @@ struct Matrix {
     double** data;
 };
 
+void matrix_swap(matrix_t* M1, matrix_t* M2);
+
 void matrix_copy(matrix_t* Copy, const matrix_t* Reference);
 
 matrix_t init_rand_matrix(int lines, int columns);

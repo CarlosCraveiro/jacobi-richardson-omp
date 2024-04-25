@@ -39,14 +39,13 @@ matrix_t gaussjacobi(const matrix_t* A, const matrix_t* B) {
     matrix_t Xkprev = init_matrix(B->lines, 1, 1);
     int itr = 0;
     do {
-        matrix_copy(&Xkprev, &Xk); 
+        matrix_swap(&Xkprev, &Xk); 
         
         for(int i = 0; i < B->lines; i++) {
             double xi = B->data[i][0];
 
             for(int j = 0; j < A->columns ; j++) {
-                if(i == j) continue; // Nulifies the diag of C virtual matrix
-                xi += -1 * A->data[i][j] * Xkprev.data[j][0];
+                if(i != j) xi += -1 * A->data[i][j] * Xkprev.data[j][0];
             }
 
             Xk.data[i][0] = xi / A->data[i][i];

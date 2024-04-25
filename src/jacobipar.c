@@ -21,7 +21,7 @@ double gaussjacobi_error_parallel(const matrix_t* Xk, const matrix_t* Xkprev, in
     double *diff_vec = malloc(Xk->lines * sizeof(double));
     double *abs_xk_vec = malloc(Xk->lines * sizeof(double));
     
-    #pragma omp parallel num_threads(n_threads) shared(diff_vec, abs_xk_vec, Xk, Xkprev)
+    #pragma omp parallel for num_threads(n_threads) default(private) shared(diff_vec, abs_xk_vec, Xk, Xkprev)
     for(int i = 0; i < Xk->lines; i++) {
         abs_xk_vec[i] = fabs(Xk->data[i][0]);
         diff_vec[i] = fabs(Xk->data[i][0] - Xkprev->data[i][0]);
@@ -41,16 +41,16 @@ matrix_t gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_thread
     matrix_t Xkprev = init_matrix(B->lines, 1, 1);
     int itr = 0;
     do {
-        matrix_copy(&Xkprev, &Xk); 
+        matrix_swap(&Xkprev, &Xk); 
 
-        #pragma omp parallel num_threads(n_threads) shared(A, B, Xk, Xkprev)
+        #pragma omp parallel for num_threads(n_threads) default(private) shared(A, B, Xk, Xkprev)
         for(int i = 0; i < B->lines; i++) {
             double xi = B->data[i][0];
             
-            #pragma omp simd // Pedir ajuda do IVAN
+            #pragma omp simd // IVAN AAAAA AJUDA
             for(int j = 0; j < A->columns ; j++) {
                 if(i != j) xi += -1 * A->data[i][j] * Xkprev.data[j][0];
-            }
+            } 
 
             Xk.data[i][0] = xi / A->data[i][i];
         }

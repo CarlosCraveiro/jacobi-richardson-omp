@@ -4,12 +4,19 @@
 #include <stdlib.h>
 #include <sys/param.h>
 
+// Deprecated!!
 void matrix_copy(matrix_t* Copy, const matrix_t* Reference) {
     for(int i = 0; i < Copy->lines; i++) {
         for(int j = 0; j < Copy->columns; j++) {
             Copy->data[i][j] = Reference->data[i][j];
         }
     }
+}
+
+void matrix_swap(matrix_t* M1, matrix_t* M2) {
+    double** aux =  M1->data;
+    M1->data = M2->data;
+    M2->data = aux;
 }
 
 void print_matrix(matrix_t* M, int is_array) {
