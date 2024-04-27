@@ -11,15 +11,15 @@ void matrix_swap(matrix_t* M1, matrix_t* M2) {
     M2->data = aux;
 }
 
-matrix_t matrix_transpose(const matrix_t* A) {
-    matrix_t At;
+matrix_t* matrix_transpose(const matrix_t* A) {
+    matrix_t* At = malloc(sizeof(*A));
 
-    At.data = malloc(A->columns * A->rows * sizeof(*At.data)); // NxUninitialize 
-    At.columns= A->columns;
-    At.columns = A->rows;
+    At->data = malloc(A->columns * A->rows * sizeof(*At->data)); // NxUninitialize 
+    At->columns= A->columns;
+    At->columns = A->rows;
     for(int i = 0; i < A->columns; i++) {
         for(int j = 0; j < A->rows; j++) {
-            At.data[At.columns*i + j] = A->data[A->columns*i + j];
+            At->data[At->columns*i + j] = A->data[A->columns*i + j];
         }
     }
 
@@ -52,54 +52,54 @@ void print_matrix(matrix_t* M, int is_array) {
     } 
 }
 
-matrix_t init_matrix(int rows, int columns, matrix_value_t init_value) {
+matrix_t* init_matrix(int rows, int columns, matrix_value_t init_value) {
     // Definition of the matrix
     
-    matrix_t A;
+    matrix_t* A = malloc(sizeof(*A));
 
-    A.data = malloc(rows * columns * sizeof(*A.data)); // NxUninitialize 
-    A.rows = rows;
-    A.columns = columns;
+    A->data = malloc(rows * columns * sizeof(*A->data)); // NxUninitialize 
+    A->rows = rows;
+    A->columns = columns;
     for(int i = 0; i < rows; i++) {
         for(int j = 0; j < columns; j++) {
-            A.data[i*A.columns + j] = init_value;
+            A->data[i*A->columns + j] = init_value;
         }
     }
     return A;
 }
 
-matrix_t init_rand_matrix(int rows, int columns) {
+matrix_t* init_rand_matrix(int rows, int columns) {
     // Definition of the matrix
     
-    matrix_t A;
+    matrix_t* A = malloc(sizeof(*A));
 
-    A.data = malloc(rows * columns * sizeof(*A.data)); // NxUninitialize 
-    A.rows = rows;
-    A.columns = columns;
+    A->data = malloc(rows * columns * sizeof(*A->data)); // NxUninitialize 
+    A->rows = rows;
+    A->columns = columns;
     matrix_value_t diag = 0.0f;
     for(int i = 0; i < rows; i++) {  
         for(int j = 0; j < columns; j++) {
             matrix_value_t gen_value = (rand() - (RAND_MAX/2)) / 1000.0f;
-            A.data[A.columns * i + j] = gen_value;
+            A->data[A->columns * i + j] = gen_value;
             diag += fabsl(gen_value);
         }
         if(rows == columns) { // is a diagonal matrix
-            A.data[A.columns * i + i] = diag - A.data[A.columns * i + i];
+            A->data[A->columns * i + i] = diag - A->data[A->columns * i + i];
         } else if (columns == 1) {
-            A.data[A.columns * 0 + i] *= rows * rows;
+            A->data[A->columns * 0 + i] *= rows * rows;
         }
     }
     return A;
 }
 
-matrix_t multiply_matrices(matrix_t* A, matrix_t* B) {
+matrix_t* multiply_matrices(matrix_t* A, matrix_t* B) {
     // Defines result matrix C
-    matrix_t C = init_matrix(A->rows, B->columns, 0.0);
+    matrix_t* C = init_matrix(A->rows, B->columns, 0.0);
     
-    for(int i = 0; i < C.rows; i++) {
-        for(int j = 0; j < C.columns; j++) {
-            for(int k = 0; k < C.rows; k++) { // Scalar product
-                C.data[i*C.columns + j] += A->data[i*A->columns + k] * B->data[B->columns * k + j];
+    for(int i = 0; i < C->rows; i++) {
+        for(int j = 0; j < C->columns; j++) {
+            for(int k = 0; k < C->rows; k++) { // Scalar product
+                C->data[i*C->columns + j] += A->data[i*A->columns + k] * B->data[B->columns * k + j];
             }
         }
     }
@@ -107,6 +107,7 @@ matrix_t multiply_matrices(matrix_t* A, matrix_t* B) {
     return C;
 }
 
-void free_matrix(matrix_t A) {
-    free(A.data);
+void free_matrix(matrix_t* A) {
+    free(A->data);
+    free(A);
 }
