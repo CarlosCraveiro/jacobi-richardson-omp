@@ -12,3 +12,6 @@ jacobiseq
 flamegraph.html
 gecko_profile.json
 perf.*
+
+# Ignore ls cahce
+.ccls-cache/
