@@ -21,7 +21,7 @@ matrix_value_t gaussjacobi_error_parallel(const matrix_t* Xk, const matrix_t* Xk
     matrix_value_t *diff_vec = malloc(Xk->rows * sizeof(*diff_vec));
     matrix_value_t *abs_xk_vec = malloc(Xk->rows * sizeof(*abs_xk_vec));
     
-    #pragma omp parallel for num_threads(n_threads) shared(diff_vec, abs_xk_vec, Xk, Xkprev)
+    #pragma omp taskloop simd
     for(int i = 0; i < Xk->rows; i++) {
         abs_xk_vec[i] = fabs(Xk->data[Xk->columns * i + 0]);
         diff_vec[i] = fabs(Xk->data[Xk->columns * i + 0] - Xkprev->data[Xkprev->columns * i + 0]);
@@ -34,44 +34,81 @@ matrix_value_t gaussjacobi_error_parallel(const matrix_t* Xk, const matrix_t* Xk
     free(abs_xk_vec);
 
     return (max_diff / max_Xk_abs_element);
-} 
+}
 
-matrix_t gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_threads) {
-    matrix_t Xk = init_matrix(B->rows, 1, 1);
-    matrix_t Xkprev = init_matrix(B->rows, 1, 1);
-    
-    #pragma omp parallel num_threads(n_threads) default(firstprivate) shared(A, B, Xk, Xkprev)
+void gaussjacobi_iteration_parallel(const matrix_t* A, const matrix_t* B, const matrix_t* Xk, const matrix_t* Xkprev, int n_threads) {
+    #pragma omp taskloop
+    for(int i = 0; i < B->rows; i++) {
+        matrix_value_t xi = 0.0;
+        #pragma omp simd reduction(+:xi)
+        for(int j = 0; j < A->columns; j++)
+            xi += -1 * A->data[A->columns * i + j] * Xkprev->data[Xkprev->columns * j + 0];
+         
+	xi += B->data[B->columns * i + 0];
+        xi += A->data[A->columns * i + i] * Xkprev->data[Xkprev->columns * i + 0]; //the diagonal is added cause of the previous loop
+										 //so we remove it by adding witout multiplying with -1
+        Xk->data[Xk->columns * i + 0] = xi / A->data[A->columns * i + i];
+    }
+}
+
+matrix_t* gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_threads) {
+    matrix_t *Xki = init_matrix(B->rows, 1, 1); //current Xk (i) -- only 'iteration' will interact with this, so no lock
+    matrix_t *Xki_m1 = init_matrix(B->rows, 1, 1); //previous Xk (i-1) i_m1 -- will swap to the buffer of Xki at the end,
+    matrix_t *Xki_m2 = init_matrix(B->rows, 1, 1); //before the previous Xk (i-2)   i_m2 -- will swap to the buffer of Xki at the end,
+    //the critical region only happens when it updates Xki_m1 and Xki_m2 by swapping the buffers at the end of 'iteration',
+    //as they are treated as readonly on the other sections of the code, because of that,
+    //only a single critical region called 'error-check-update' is needed, which is locked when 'iteration' updates 
+    //the pointers at the end, and when 'error check' is reading both buffers
+    //this is also used to signal 'error check' that 'iteration' ran, and that it can verify the stop condition with 'first_iter_ran'
+    int* continue_iter = malloc(sizeof(int));
+    *continue_iter = 1;
+    int* iter_ran = malloc(sizeof(int));
+    *iter_ran = 0;
+    #pragma omp parallel num_threads(n_threads) shared(A, B, Xki, Xki_m1, Xki_m2, continue_iter, iter_ran, n_threads)
     { 
-    #pragma omp single
-    {
-    //int itr = 0;
-    do { 
-        matrix_swap(&Xkprev, &Xk); /* FROM HERE */ 
-        
-        //#pragma omp parallel for num_threads(n_threads) default(private) shared(A, B, Xk, Xkprev)
-        for(int i = 0; i < B->rows; i++) {
-            #pragma omp task shared(A, B, Xk, Xkprev) firstprivate(i)
+        #pragma omp single 
+        {
+            // The error check and the jacobi iterations will happen in different tasks, where one can happen without waiting for the other
+            #pragma omp task shared(A, B, Xki, Xki_m1, Xki_m2, continue_iter, iter_ran, n_threads) // gaussjacobi iteration
             {
-            matrix_value_t xi = B->data[B->columns * i + 0];
-            
-            #pragma omp simd reduction(+:xi)
-            for(int j = 0; j < A->columns ; j++) {
-                xi += -1 * A->data[A->columns * i + j] * Xkprev.data[Xkprev.columns * j + 0];
-            } 
-            xi -= -1 * A->data[A->columns * i + i] * Xkprev.data[Xkprev.columns * i + 0];
-            Xk.data[Xk.columns * i + 0] = xi / A->data[A->columns * i + i];
+		int should_continue = 1;
+                while(should_continue) { 
+                    gaussjacobi_iteration_parallel(A, B, Xki, Xki_m1, n_threads);
+                    #pragma omp critical (error_check_update)
+                    {
+                        matrix_swap(Xki_m2, Xki_m1); // Xki_m2 receives Xki_m1 buffer, and Xki_m1 receives "empty" buffer
+                        matrix_swap(Xki, Xki_m1);    // Xki_m1 receives Xki buffer, and Xki receives "empty" buffer
+            	        *iter_ran = 1; // sets the flag that a iteration ran
+		        if(*continue_iter == 0){
+				should_continue = 0;
+			}
+            	    }
+                }
+            }
+            #pragma omp task shared(Xki_m1, Xki_m2, continue_iter, iter_ran, n_threads) // gaussjacobi error check
+            {
+		int should_continue = 1;
+                while(should_continue) {
+                    #pragma omp critical (error_check_update)
+            	    {
+			if(*iter_ran){ //only run if an iteration ran
+            	            matrix_value_t error;
+                            error = gaussjacobi_error_parallel(Xki_m1, Xki_m2, n_threads); // Using the i-1 and i-2 to find the error
+            	            if(error <= THRESHOLD){
+            	                *continue_iter = 0;
+			        should_continue = 0;
+			    }
+			    *iter_ran = 0; //marks that it read the last iteration
+			}
+            	    }
+                    #pragma omp taskyield
+                }
             }
         }
-        #pragma omp taskwait
-        //printf("Iteration %d\n", itr++);
-        //print_matrix(&Xk, 1);
-        /* TO HERE BECOME TASK 1*/
-    } while(gaussjacobi_error_parallel(&Xk, &Xkprev, n_threads) > THRESHOLD);
-    /* EVAL ERROR BECOME TASK NUMBER 2*/ // MAKE COPIES OF MATRIX
     }
-    }
-    free_matrix(Xkprev);
-    return Xk;
+    free_matrix(Xki_m1);
+    free_matrix(Xki_m2);
+    return Xki;
 }
 
 int main(int argc, char* argv[]) {
@@ -90,17 +127,17 @@ int main(int argc, char* argv[]) {
     printf("test %d\n", seed);
     srand(seed);
     
-    matrix_t A = init_rand_matrix(order, order);
-    matrix_t B = init_rand_matrix(order, 1);
+    matrix_t* A = init_rand_matrix(order, order);
+    matrix_t* B = init_rand_matrix(order, 1);
     
-    //print_matrix(&A, 0);
-    //print_matrix(&B, 0);
-
-    matrix_t C = gaussjacobi_parallel(&A, &B, number_of_threads);
+    //print_matrix(A, 0);
+    //print_matrix(B, 0);
+    omp_set_nested(1);
+    matrix_t* C = gaussjacobi_parallel(A, B, number_of_threads);
     
     printf("Result: \n");
 
-    print_matrix(&C, 0);
+    //print_matrix(C, 0);
 
     free_matrix(C);
     free_matrix(A);

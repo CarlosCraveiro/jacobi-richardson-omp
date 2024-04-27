@@ -34,26 +34,26 @@ matrix_value_t gaussjacobi_error(const matrix_t* Xk, const matrix_t* Xkprev) {
     return (max_diff / max_Xk_abs_element);
 } 
 
-matrix_t gaussjacobi(const matrix_t* A, const matrix_t* B) {
-    matrix_t Xk = init_matrix(B->rows, 1, 1);
-    matrix_t Xkprev = init_matrix(B->rows, 1, 1);
+matrix_t* gaussjacobi(const matrix_t* A, const matrix_t* B) {
+    matrix_t* Xk = init_matrix(B->rows, 1, 1);
+    matrix_t* Xkprev = init_matrix(B->rows, 1, 1);
     int itr = 0;
     do {
-        matrix_swap(&Xkprev, &Xk); 
+        matrix_swap(Xkprev, Xk); 
         
         for(int i = 0; i < B->rows; i++) {
             matrix_value_t xi = B->data[B->columns * i + 0];
 
             for(int j = 0; j < A->columns ; j++) {
-                if(i != j) xi += -1 * A->data[A->columns * i + j] * Xkprev.data[Xkprev.columns * j + 0];
+                if(i != j) xi += -1 * A->data[A->columns * i + j] * Xkprev->data[Xkprev->columns * j + 0];
             }
 
-            Xk.data[Xk.columns * i + 0] = xi / A->data[A->columns * i + i];
+            Xk->data[Xk->columns * i + 0] = xi / A->data[A->columns * i + i];
         }
-        //printf("Iteration %d\n", itr++);
+        printf("Iteration %d\n", itr++);
         //print_matrix(&Xk, 1);
     
-    } while(gaussjacobi_error(&Xk, &Xkprev) > THRESHOLD);
+    } while(gaussjacobi_error(Xk, Xkprev) > THRESHOLD);
     
     free_matrix(Xkprev);
 
@@ -74,19 +74,19 @@ int main(int argc, char* argv[]) {
     printf("test %d\n", seed);
     srand(seed);
     
-    matrix_t A = init_rand_matrix(order, order);
-    matrix_t B = init_rand_matrix(order, 1);
+    matrix_t* A = init_rand_matrix(order, order);
+    matrix_t* B = init_rand_matrix(order, 1);
     //matrix_t B = init_matrix(order, 1, 1);
     
     //print_matrix(&A, 0);
     //print_matrix(&B, 0);
 
-    matrix_t C = gaussjacobi(&A, &B);
+    matrix_t* C = gaussjacobi(A, B);
     //matrix_t C = multiply_matrices(&A, &B);
     
     printf("Result: \n");
 
-    print_matrix(&C, 0);
+    //print_matrix(C, 0);
 
     free_matrix(C);
     free_matrix(A);
