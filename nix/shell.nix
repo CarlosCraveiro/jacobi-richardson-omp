@@ -6,6 +6,8 @@ mkShell {
     gnumake
     valgrind
     gdb
+    linuxPackages_latest.perf
+    firefox
   ];
 
   shellHook = ''

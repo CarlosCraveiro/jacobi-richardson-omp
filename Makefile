@@ -6,6 +6,12 @@ clean:
 	rm -rf jacobiseq
 	rm -rf jacobipar
 	rm -rf *.out
+	rm -rf perf.*
+	rm -rf gecko_profile.json 
+
+perf:
+	perf record -g -- ./jacobipar 10000 10 42
+	perf script report gecko
 
 run:
 	./jacobiseq 3 42

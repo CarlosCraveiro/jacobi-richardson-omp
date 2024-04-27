@@ -7,3 +7,8 @@ jacobiseq
 
 # Test files
 *.out
+
+# Perf files
+flamegraph.html
+gecko_profile.json
+perf.*
