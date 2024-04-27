@@ -2,12 +2,10 @@
 with pkgs;
 mkShell {
   buildInputs = [
-    gcc
-    gnumake
+    stdenv
     valgrind
     gdb
     linuxPackages_latest.perf
-    firefox
   ];
 
   shellHook = ''
