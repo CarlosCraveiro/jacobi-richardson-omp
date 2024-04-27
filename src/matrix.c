@@ -3,9 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/param.h>
+#include <math.h>
 
 void matrix_swap(matrix_t* M1, matrix_t* M2) {
-    double* aux =  M1->data;
+    long double* aux =  M1->data;
     M1->data = M2->data;
     M2->data = aux;
 }
@@ -13,7 +14,7 @@ void matrix_swap(matrix_t* M1, matrix_t* M2) {
 matrix_t matrix_transpose(const matrix_t* A) {
     matrix_t At;
 
-    At.data = malloc(A->columns * A->rows * sizeof(double)); // NxUninitialize 
+    At.data = malloc(A->columns * A->rows * sizeof(long double)); // NxUninitialize 
     At.columns= A->columns;
     At.columns = A->rows;
     for(int i = 0; i < A->columns; i++) {
@@ -33,7 +34,7 @@ void print_matrix(matrix_t* M, int is_array) {
 
     for(int i = 0; i < M->rows; i++) {
         for(int j = 0; j < M->columns; j++) {
-            printf("%.3lf", M->data[M->columns*i + j]);
+            printf("%.3Lf", M->data[M->columns*i + j]);
 
             if(j != (M->columns - 1) ||
                     ((is_array == 1) && (i != M->columns - 1))
@@ -51,12 +52,12 @@ void print_matrix(matrix_t* M, int is_array) {
     } 
 }
 
-matrix_t init_matrix(int rows, int columns, double init_value) {
+matrix_t init_matrix(int rows, int columns, long double init_value) {
     // Definition of the matrix
     
     matrix_t A;
 
-    A.data = malloc(rows * columns * sizeof(double)); // NxUninitialize 
+    A.data = malloc(rows * columns * sizeof(long double)); // NxUninitialize 
     A.rows = rows;
     A.columns = columns;
     for(int i = 0; i < rows; i++) {
@@ -72,19 +73,20 @@ matrix_t init_rand_matrix(int rows, int columns) {
     
     matrix_t A;
 
-    A.data = malloc(rows * columns * sizeof(double)); // NxUninitialize 
+    A.data = malloc(rows * columns * sizeof(long double)); // NxUninitialize 
     A.rows = rows;
     A.columns = columns;
-    for(int i = 0; i < rows; i++) {
-        int diag_int = rand();
-        int upper_limit = diag_int / MAX(rows, columns);
+    long double diag = 0.0f;
+    for(int i = 0; i < rows; i++) {  
         for(int j = 0; j < columns; j++) {
-            if(i == j) {
-                A.data[A.columns*i + j] = (diag_int / 1000.0f);
-            } else {
-                double gen_value = ((rand() % (2*upper_limit)) - upper_limit) / 1000.0f;
-                A.data[A.columns * i + j] = gen_value;
-            } 
+            long double gen_value = (rand() - (RAND_MAX/2)) / 1000.0f;
+            A.data[A.columns * i + j] = gen_value;
+            diag += fabsl(gen_value);
+        }
+        if(rows == columns) { // is a diagonal matrix
+            A.data[A.columns * i + i] = diag - A.data[A.columns * i + i];
+        } else if (columns == 1) {
+            A.data[A.columns * 0 + i] *= rows * rows;
         }
     }
     return A;

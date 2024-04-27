@@ -5,7 +5,7 @@ typedef struct Matrix matrix_t;
 struct Matrix {
     int rows;
     int columns;
-    double* data;
+    long double* data;
 };
 
 matrix_t matrix_transpose(const matrix_t* A);
@@ -18,7 +18,7 @@ matrix_t init_rand_matrix(int rows, int columns);
 
 void print_matrix(matrix_t* M, int is_array);
 
-matrix_t init_matrix(int rows, int columns, double init_value); 
+matrix_t init_matrix(int rows, int columns, long double init_value); 
 
 matrix_t multiply_matrices(matrix_t* A, matrix_t* B);
 

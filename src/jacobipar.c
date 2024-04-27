@@ -39,28 +39,37 @@ double gaussjacobi_error_parallel(const matrix_t* Xk, const matrix_t* Xkprev, in
 matrix_t gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_threads) {
     matrix_t Xk = init_matrix(B->rows, 1, 1);
     matrix_t Xkprev = init_matrix(B->rows, 1, 1);
-
+    
+    #pragma omp parallel num_threads(n_threads) default(firstprivate) shared(A, B, Xk, Xkprev)
+    { 
+    #pragma omp single
+    {
     //int itr = 0;
-    do {
+    do { 
         matrix_swap(&Xkprev, &Xk); /* FROM HERE */ 
         
-        #pragma omp parallel for num_threads(n_threads) default(private) shared(A, B, Xk, Xkprev)
+        //#pragma omp parallel for num_threads(n_threads) default(private) shared(A, B, Xk, Xkprev)
         for(int i = 0; i < B->rows; i++) {
+            #pragma omp task shared(A, B, Xk, Xkprev) firstprivate(i)
+            {
             double xi = B->data[B->columns * i + 0];
             
-            #pragma omp simd // Refatorar representacao da matriz e adicionar um reduction
+            #pragma omp simd reduction(+:xi)
             for(int j = 0; j < A->columns ; j++) {
-                if(i != j) xi += -1 * A->data[A->columns * i + j] * Xkprev.data[Xkprev.columns * j + 0];
+                xi += -1 * A->data[A->columns * i + j] * Xkprev.data[Xkprev.columns * j + 0];
             } 
-
+            xi -= -1 * A->data[A->columns * i + i] * Xkprev.data[Xkprev.columns * i + 0];
             Xk.data[Xk.columns * i + 0] = xi / A->data[A->columns * i + i];
+            }
         }
+        #pragma omp taskwait
         //printf("Iteration %d\n", itr++);
         //print_matrix(&Xk, 1);
         /* TO HERE BECOME TASK 1*/
     } while(gaussjacobi_error_parallel(&Xk, &Xkprev, n_threads) > THRESHOLD);
     /* EVAL ERROR BECOME TASK NUMBER 2*/ // MAKE COPIES OF MATRIX
-    
+    }
+    }
     free_matrix(Xkprev);
     return Xk;
 }
