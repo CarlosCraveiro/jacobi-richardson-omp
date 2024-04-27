@@ -7,8 +7,8 @@
 
 #define THRESHOLD 0.001
 
-double max(const double* array, int size) {
-    double greater = array[0];
+matrix_value_t max(const matrix_value_t* array, int size) {
+    matrix_value_t greater = array[0];
 
     for(int i = 1; i < size; i++) {
         greater = (greater > array[i])? greater : array[i];    
@@ -17,9 +17,9 @@ double max(const double* array, int size) {
     return greater;
 }
 
-double gaussjacobi_error_parallel(const matrix_t* Xk, const matrix_t* Xkprev, int n_threads) {
-    double *diff_vec = malloc(Xk->rows * sizeof(double));
-    double *abs_xk_vec = malloc(Xk->rows * sizeof(double));
+matrix_value_t gaussjacobi_error_parallel(const matrix_t* Xk, const matrix_t* Xkprev, int n_threads) {
+    matrix_value_t *diff_vec = malloc(Xk->rows * sizeof(*diff_vec));
+    matrix_value_t *abs_xk_vec = malloc(Xk->rows * sizeof(*abs_xk_vec));
     
     #pragma omp parallel for num_threads(n_threads) shared(diff_vec, abs_xk_vec, Xk, Xkprev)
     for(int i = 0; i < Xk->rows; i++) {
@@ -27,8 +27,8 @@ double gaussjacobi_error_parallel(const matrix_t* Xk, const matrix_t* Xkprev, in
         diff_vec[i] = fabs(Xk->data[Xk->columns * i + 0] - Xkprev->data[Xkprev->columns * i + 0]);
     }
     
-    double max_diff = max(diff_vec, Xk->rows); 
-    double max_Xk_abs_element = max(abs_xk_vec, Xk->rows); 
+    matrix_value_t max_diff = max(diff_vec, Xk->rows); 
+    matrix_value_t max_Xk_abs_element = max(abs_xk_vec, Xk->rows); 
     
     free(diff_vec);
     free(abs_xk_vec);
@@ -52,7 +52,7 @@ matrix_t gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_thread
         for(int i = 0; i < B->rows; i++) {
             #pragma omp task shared(A, B, Xk, Xkprev) firstprivate(i)
             {
-            double xi = B->data[B->columns * i + 0];
+            matrix_value_t xi = B->data[B->columns * i + 0];
             
             #pragma omp simd reduction(+:xi)
             for(int j = 0; j < A->columns ; j++) {

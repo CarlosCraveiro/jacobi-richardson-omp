@@ -6,8 +6,8 @@
 
 #define THRESHOLD 0.001
 
-double max(const double* array, int size) {
-    double greater = array[0];
+matrix_value_t max(const matrix_value_t* array, int size) {
+    matrix_value_t greater = array[0];
 
     for(int i = 1; i < size; i++) {
         greater = (greater > array[i])? greater : array[i];    
@@ -16,17 +16,17 @@ double max(const double* array, int size) {
     return greater;
 }
 
-double gaussjacobi_error(const matrix_t* Xk, const matrix_t* Xkprev) {
-    double *diff_vec = malloc(Xk->rows * sizeof(double));
-    double *abs_xk_vec = malloc(Xk->rows * sizeof(double));
+matrix_value_t gaussjacobi_error(const matrix_t* Xk, const matrix_t* Xkprev) {
+    matrix_value_t *diff_vec = malloc(Xk->rows * sizeof(*diff_vec));
+    matrix_value_t *abs_xk_vec = malloc(Xk->rows * sizeof(*abs_xk_vec));
     
     for(int i = 0; i < Xk->rows; i++) {
         abs_xk_vec[i] = fabs(Xk->data[Xk->columns * i + 0]);
         diff_vec[i] = fabs(Xk->data[Xk->columns * i + 0] - Xkprev->data[Xkprev->columns * i + 0]);
     }
     
-    double max_diff = max(diff_vec, Xk->rows); 
-    double max_Xk_abs_element = max(abs_xk_vec, Xk->rows); 
+    matrix_value_t max_diff = max(diff_vec, Xk->rows); 
+    matrix_value_t max_Xk_abs_element = max(abs_xk_vec, Xk->rows); 
     
     free(diff_vec);
     free(abs_xk_vec);
@@ -42,7 +42,7 @@ matrix_t gaussjacobi(const matrix_t* A, const matrix_t* B) {
         matrix_swap(&Xkprev, &Xk); 
         
         for(int i = 0; i < B->rows; i++) {
-            double xi = B->data[B->columns * i + 0];
+            matrix_value_t xi = B->data[B->columns * i + 0];
 
             for(int j = 0; j < A->columns ; j++) {
                 if(i != j) xi += -1 * A->data[A->columns * i + j] * Xkprev.data[Xkprev.columns * j + 0];

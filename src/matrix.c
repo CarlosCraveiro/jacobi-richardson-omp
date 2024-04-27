@@ -6,7 +6,7 @@
 #include <math.h>
 
 void matrix_swap(matrix_t* M1, matrix_t* M2) {
-    long double* aux =  M1->data;
+    matrix_value_t* aux =  M1->data;
     M1->data = M2->data;
     M2->data = aux;
 }
@@ -14,7 +14,7 @@ void matrix_swap(matrix_t* M1, matrix_t* M2) {
 matrix_t matrix_transpose(const matrix_t* A) {
     matrix_t At;
 
-    At.data = malloc(A->columns * A->rows * sizeof(long double)); // NxUninitialize 
+    At.data = malloc(A->columns * A->rows * sizeof(*At.data)); // NxUninitialize 
     At.columns= A->columns;
     At.columns = A->rows;
     for(int i = 0; i < A->columns; i++) {
@@ -34,7 +34,7 @@ void print_matrix(matrix_t* M, int is_array) {
 
     for(int i = 0; i < M->rows; i++) {
         for(int j = 0; j < M->columns; j++) {
-            printf("%.3Lf", M->data[M->columns*i + j]);
+            printf("%.3f", M->data[M->columns*i + j]);
 
             if(j != (M->columns - 1) ||
                     ((is_array == 1) && (i != M->columns - 1))
@@ -52,12 +52,12 @@ void print_matrix(matrix_t* M, int is_array) {
     } 
 }
 
-matrix_t init_matrix(int rows, int columns, long double init_value) {
+matrix_t init_matrix(int rows, int columns, matrix_value_t init_value) {
     // Definition of the matrix
     
     matrix_t A;
 
-    A.data = malloc(rows * columns * sizeof(long double)); // NxUninitialize 
+    A.data = malloc(rows * columns * sizeof(*A.data)); // NxUninitialize 
     A.rows = rows;
     A.columns = columns;
     for(int i = 0; i < rows; i++) {
@@ -73,13 +73,13 @@ matrix_t init_rand_matrix(int rows, int columns) {
     
     matrix_t A;
 
-    A.data = malloc(rows * columns * sizeof(long double)); // NxUninitialize 
+    A.data = malloc(rows * columns * sizeof(*A.data)); // NxUninitialize 
     A.rows = rows;
     A.columns = columns;
-    long double diag = 0.0f;
+    matrix_value_t diag = 0.0f;
     for(int i = 0; i < rows; i++) {  
         for(int j = 0; j < columns; j++) {
-            long double gen_value = (rand() - (RAND_MAX/2)) / 1000.0f;
+            matrix_value_t gen_value = (rand() - (RAND_MAX/2)) / 1000.0f;
             A.data[A.columns * i + j] = gen_value;
             diag += fabsl(gen_value);
         }
