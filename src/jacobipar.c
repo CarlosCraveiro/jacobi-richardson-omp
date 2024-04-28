@@ -18,6 +18,10 @@ matrix_value_t max(const matrix_value_t* array, int size) {
     return greater;
 }
 
+//TODO Falta usar a diretiva 'for', infelizmente nao da para colocar ela no lugar de taskloop,
+//pois isso iria criar threads nested, que sao bem ruins, entao o jeito eh tentar descobrir onde enfiar eles
+//ja que eh obrigatorio
+
 matrix_value_t gaussjacobi_error_parallel(const matrix_t* Xk, const matrix_t* Xkprev, int n_threads) {
     matrix_value_t *diff_vec = malloc(Xk->rows * sizeof(*diff_vec));
     matrix_value_t *abs_xk_vec = malloc(Xk->rows * sizeof(*abs_xk_vec));
