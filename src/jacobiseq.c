@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #define THRESHOLD 0.001
@@ -50,7 +51,7 @@ matrix_t* gaussjacobi(const matrix_t* A, const matrix_t* B) {
 
             Xk->data[Xk->columns * i + 0] = xi / A->data[A->columns * i + i];
         }
-        printf("Iteration %d\n", itr++);
+        //printf("Iteration %d\n", itr++);
         //print_matrix(&Xk, 1);
     
     } while(gaussjacobi_error(Xk, Xkprev) > THRESHOLD);
@@ -60,33 +61,75 @@ matrix_t* gaussjacobi(const matrix_t* A, const matrix_t* B) {
     return Xk;
 }
 
-int main(int argc, char* argv[]) {
-    if(argc != 3) {
-        printf("Incorrect number of arguments!\n");
+int main(int argc, char* argv[]) { 
+    int order, seed;
+    int quiet_mode = 0;
+    int incorrect_usage_of_args = 0;
+    int number_argument = 0;
+    for(int i = 1; i < argc; i++) {
+        if(argv[i][0] == '-') { // this is a flag
+	    if(strcmp(argv[i],"-q") == 0) quiet_mode = 1; //quiet flag
+	    else if(strcmp(argv[i],"-h") == 0) incorrect_usage_of_args = 1; //force help message
+	    else if(strcmp(argv[i],"-v") == 0) printf("Version: CAD\n");
+            else printf("There is no option for flag %s\n",argv[i]);
+	}
+	else { // this is an arg
+	    char* end;
+            if(number_argument == 0) { //first number argument
+		order = strtol(argv[i], &end, 10);
+		if(*end != '\0' || order < 2) {
+		    incorrect_usage_of_args = 1;
+		    printf("Order is not a number bigger then 2!\n");
+		}
+	    }
+	    else if(number_argument == 1) { //second number argument
+		seed = strtol(argv[i], &end, 10);
+		if(*end != '\0') {
+		    incorrect_usage_of_args = 1;
+		    printf("Seed is not a number!\n");
+		}
+	    }
+	    else {
+                incorrect_usage_of_args = 1;
+		printf("Too many arguments!\n");
+	    }
+	    number_argument++;
+	}
+    }
+    if(number_argument < 2) {
+        printf("Arguments missing!\n");
+	incorrect_usage_of_args = 1;
+    }
+    
+    if(incorrect_usage_of_args == 1) {
         printf("Correct Usage:\n");
         printf("$ ./jacobiseq <N> <seed>\n");
-        printf("\tN - Matrix order\n");
-        printf("\tseed - seed for the pseudorandom number generator\n");
+        printf("\tN - Matrix order (>= 2)\n");
+        printf("\tseed - seed for the pseudorandom number generator (>= 0)\n");
+        printf("Flags:\n");
+        printf("\t-h - displays help message\n");
+        printf("\t-q - doesn't print matrix values nor result\n");
         exit(-1);
     }
-    int seed = atoi(argv[2]);
-    int order = atoi(argv[1]);
-    printf("test %d\n", seed);
+
+    if(!quiet_mode)
+        printf("Seed: %d\n", seed);
+
     srand(seed);
     
     matrix_t* A = init_rand_matrix(order, order);
     matrix_t* B = init_rand_matrix(order, 1);
-    //matrix_t B = init_matrix(order, 1, 1);
     
-    //print_matrix(&A, 0);
-    //print_matrix(&B, 0);
-
+    if(!quiet_mode) {
+        print_matrix(A, 0);
+        print_matrix(B, 0);
+    }
     matrix_t* C = gaussjacobi(A, B);
-    //matrix_t C = multiply_matrices(&A, &B);
     
-    printf("Result: \n");
-
-    //print_matrix(C, 0);
+    if(!quiet_mode) {
+        printf("Result: \n");
+        print_matrix(C, 0);
+    }
 
     free_matrix(C);
     free_matrix(A);

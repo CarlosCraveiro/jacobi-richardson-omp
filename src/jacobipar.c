@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #define THRESHOLD 0.001
@@ -113,33 +114,84 @@ matrix_t* gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_threa
     return Xki;
 }
 
-int main(int argc, char* argv[]) {
-    if(argc != 4) {
-        printf("Incorrect number of arguments!\n");
-        printf("Correct Usage:\n");
+int main(int argc, char* argv[]) { 
+    int order, seed, number_of_threads;
+    int quiet_mode = 0;
+    int incorrect_usage_of_args = 0;
+    int number_argument = 0;
+    for(int i = 1; i < argc; i++) {
+        if(argv[i][0] == '-') { // this is a flag
+	    if(strcmp(argv[i],"-q") == 0) quiet_mode = 1; //quiet flag
+	    else if(strcmp(argv[i],"-h") == 0) incorrect_usage_of_args = 1; //force help text
+	    else if(strcmp(argv[i],"-v") == 0) printf("Version: CAD\n");
+            else printf("There is no option for flag %s\n",argv[i]);
+	}
+	else { // this is an arg
+	    char* end;
+            if(number_argument == 0) { //first number argument
+		order = strtol(argv[i], &end, 10);
+		if(*end != '\0' || order < 2) {
+		    incorrect_usage_of_args = 1;
+		    printf("Order is not a number bigger then 2!\n");
+		}
+	    }
+	    else if(number_argument == 1) { //second number argument
+		number_of_threads = strtol(argv[i], &end, 10);
+		if(*end != '\0' || number_of_threads < 2) {
+		    incorrect_usage_of_args = 1;
+		    printf("Number of Threads is not a number bigger then 2!\n");
+		}
+	    }
+	    else if(number_argument == 2) { //second number argument
+		seed = strtol(argv[i], &end, 10);
+		if(*end != '\0') {
+		    incorrect_usage_of_args = 1;
+		    printf("Seed is not a number!\n");
+		}
+	    }
+	    else {
+                incorrect_usage_of_args = 1;
+		printf("Too many arguments!\n");
+	    }
+	    number_argument++;
+	}
+    }
+    if(number_argument < 3) {
+        printf("Arguments missing!\n");
+	incorrect_usage_of_args = 1;
+    }
+    
+    if(incorrect_usage_of_args == 1) {
+        printf("Usage:\n");
         printf("$ ./jacobipar <N> <T> <seed>\n");
-        printf("\tN - Matrix order\n");
-        printf("\tT - Number of threads\n");
-        printf("\tseed - seed for the pseudorandom number generator\n");
+        printf("\tN - Matrix order (>= 2)\n");
+        printf("\tT - Number of threads (>= 2)\n");
+        printf("\tseed - seed for the pseudorandom number generator (>= 0)\n");
+        printf("Flags:\n");
+        printf("\t-h - displays help message\n");
+        printf("\t-q - doesn't print matrix values nor result\n");
         exit(-1);
     }
-    int seed = atoi(argv[3]);
-    int number_of_threads = atoi(argv[2]);
-    int order = atoi(argv[1]);
-    printf("test %d\n", seed);
+    if(!quiet_mode)
+        printf("Seed: %d\n", seed);
+
     srand(seed);
     
     matrix_t* A = init_rand_matrix(order, order);
     matrix_t* B = init_rand_matrix(order, 1);
     
-    //print_matrix(A, 0);
-    //print_matrix(B, 0);
+    if(!quiet_mode) {
+        print_matrix(A, 0);
+        print_matrix(B, 0);
+    }
+
     omp_set_nested(1);
     matrix_t* C = gaussjacobi_parallel(A, B, number_of_threads);
     
-    printf("Result: \n");
-
-    //print_matrix(C, 0);
+    if(!quiet_mode) {
+        printf("Result: \n");
+        print_matrix(C, 0);
+    }
 
     free_matrix(C);
     free_matrix(A);
