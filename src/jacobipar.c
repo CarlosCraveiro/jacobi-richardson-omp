@@ -108,6 +108,8 @@ matrix_t* gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_threa
     }
     free_matrix(Xki_m1);
     free_matrix(Xki_m2);
+    free(iter_ran);
+    free(continue_iter);
     return Xki;
 }
 
