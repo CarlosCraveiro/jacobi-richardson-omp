@@ -18,11 +18,11 @@ matrix_value_t max(const matrix_value_t* array, int size) {
     return greater;
 }
 
-matrix_value_t gaussjacobi_error_parallel(const matrix_t* Xk, const matrix_t* Xkprev, int n_threads) {
+matrix_value_t gaussjacobi_error_parallel(const matrix_t* Xk, const matrix_t* Xkprev) {
     matrix_value_t *diff_vec = malloc(Xk->rows * sizeof(*diff_vec));
     matrix_value_t *abs_xk_vec = malloc(Xk->rows * sizeof(*abs_xk_vec));
     
-    #pragma omp taskloop simd
+    #pragma omp simd
     for(int i = 0; i < Xk->rows; i++) {
         abs_xk_vec[i] = fabs(Xk->data[Xk->columns * i + 0]);
         diff_vec[i] = fabs(Xk->data[Xk->columns * i + 0] - Xkprev->data[Xkprev->columns * i + 0]);
@@ -61,11 +61,10 @@ matrix_t* gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_threa
     //only a single critical region called 'error-check-update' is needed, which is locked when 'iteration' updates 
     //the pointers at the end, and when 'error check' is reading both buffers
     //this is also used to signal 'error check' that 'iteration' ran, and that it can verify the stop condition with 'first_iter_ran'
-    int* continue_iter = malloc(sizeof(int));
-    *continue_iter = 1;
-    int* iter_ran = malloc(sizeof(int));
-    *iter_ran = 0;
-    #pragma omp parallel num_threads(n_threads) shared(A, B, Xki, Xki_m1, Xki_m2, continue_iter, iter_ran, n_threads)
+    int continue_iter = 1;
+    int iter_ran = 0;
+    //1 thread for each task
+    #pragma omp parallel num_threads(2) shared(A, B, Xki, Xki_m1, Xki_m2, continue_iter, iter_ran, n_threads)
     { 
         #pragma omp single nowait 
         {
@@ -77,14 +76,17 @@ matrix_t* gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_threa
                 while(should_continue) {
                     #pragma omp critical (error_check_update)
             	    {
-			if(*iter_ran){ //only run if an iteration ran
+		        #pragma omp flush(iter_ran)
+			if(iter_ran){ //only run if an iteration ran
             	            matrix_value_t error;
-                            error = gaussjacobi_error_parallel(Xki_m1, Xki_m2, n_threads); // Using the i-1 and i-2 to find the error
+			    //half the threads for the parallel for
+                            error = gaussjacobi_error_parallel(Xki_m1, Xki_m2); // Using the i-1 and i-2 to find the error
             	            if(error <= THRESHOLD){
-            	                *continue_iter = 0;
+            	                continue_iter = 0;
 			        should_continue = 0;
 			    }
-			    *iter_ran = 0; //marks that it read the last iteration
+			    iter_ran = 0; //marks that it read the last iteration
+		            #pragma omp flush(iter_ran, continue_iter)
 			}
             	    }
                     #pragma omp taskyield
@@ -93,13 +95,14 @@ matrix_t* gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_threa
             // gaussjacobi iteration
 	    int should_continue = 1;
             while(should_continue) {
-                gaussjacobi_iteration_parallel(A, B, Xki, Xki_m1, n_threads);
+                gaussjacobi_iteration_parallel(A, B, Xki, Xki_m1, n_threads - 1);
                 #pragma omp critical (error_check_update)
                 {
                     matrix_swap(Xki_m2, Xki_m1); // Xki_m2 receives Xki_m1 buffer, and Xki_m1 receives "empty" buffer
                     matrix_swap(Xki, Xki_m1);    // Xki_m1 receives Xki buffer, and Xki receives "empty" buffer
-            	    *iter_ran = 1; // sets the flag that a iteration ran
-		    if(*continue_iter == 0){
+            	    iter_ran = 1; // sets the flag that a iteration ran
+		    #pragma omp flush(iter_ran, continue_iter)
+		    if(continue_iter == 0){
 			should_continue = 0;
 		    }
             	}
@@ -108,8 +111,6 @@ matrix_t* gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_threa
     }
     free_matrix(Xki_m1);
     free_matrix(Xki_m2);
-    free(iter_ran);
-    free(continue_iter);
     return Xki;
 }
 
