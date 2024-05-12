@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
     printf("test %d\n", seed);
     srand(seed);
     
-    matrix_t A = init_rand_matrix(order, order);
+    matrix_t A = init_rand_diag_dominant_matrix(order);
     matrix_t B = init_rand_matrix(order, 1);
     
     //print_matrix(&A, 0);

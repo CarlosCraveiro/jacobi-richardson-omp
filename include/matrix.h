@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#define RANDOM_RANGE 10
+
 typedef double matrix_value_t;
 typedef struct Matrix matrix_t;
 
@@ -21,6 +23,8 @@ void matrix_copy(matrix_t* Copy, const matrix_t* Reference);
 matrix_t init_rand_matrix(int rows, int columns);
 
 void print_matrix(matrix_t* M, int is_array);
+
+matrix_t init_rand_diag_dominant_matrix(int order);
 
 matrix_t init_matrix(int rows, int columns, matrix_value_t init_value); 
 

@@ -55,7 +55,6 @@ void print_matrix(matrix_t* M, int is_array) {
 
 matrix_t init_matrix(int rows, int columns, matrix_value_t init_value) {
     // Definition of the matrix
-    
     matrix_t A;
 
     A.data = malloc(rows * columns * sizeof(*A.data)); // NxUninitialize 
@@ -66,30 +65,47 @@ matrix_t init_matrix(int rows, int columns, matrix_value_t init_value) {
             A.data[i*A.columns + j] = init_value;
         }
     }
+
+    return A;
+}
+
+matrix_t init_rand_diag_dominant_matrix(int order) {
+    // Definition of the matrix
+    matrix_t A;
+
+    A.data = malloc(order * order * sizeof(*A.data)); // NxUninitialize 
+    A.rows = order;
+    A.columns = order;
+
+    matrix_value_t diag = 0.0f;
+    for(int i = 0; i < order; i++) {  
+        for(int j = 0; j < order; j++) {
+            matrix_value_t gen_value = rand()%RANDOM_RANGE;
+            A.data[A.columns * i + j] = gen_value;
+            diag += fabs(gen_value);
+        }
+
+        A.data[A.columns * i + i] = diag - A.data[A.columns * i + i] + 1;
+    }
+    
     return A;
 }
 
 matrix_t init_rand_matrix(int rows, int columns) {
     // Definition of the matrix
-    
     matrix_t A;
 
     A.data = malloc(rows * columns * sizeof(*A.data)); // NxUninitialize 
     A.rows = rows;
     A.columns = columns;
+
     matrix_value_t diag = 0.0f;
     for(int i = 0; i < rows; i++) {  
         for(int j = 0; j < columns; j++) {
-            matrix_value_t gen_value = (rand() - (RAND_MAX/2)) / 1000.0f;
-            A.data[A.columns * i + j] = gen_value;
-            diag += fabsl(gen_value);
-        }
-        if(rows == columns) { // is a diagonal matrix
-            A.data[A.columns * i + i] = diag - A.data[A.columns * i + i];
-        } else if (columns == 1) {
-            A.data[A.columns * 0 + i] *= rows * rows;
+            A.data[A.columns * i + j] = rand()%RANDOM_RANGE;
         }
     }
+    
     return A;
 }
 
@@ -126,7 +142,7 @@ matrix_value_t ith_row_GEMV(matrix_t* A, matrix_t* B, size_t row) {
     // Apply Kahan's compensated summation formula for better accuracy.
     for(size_t j = 0; j < A->columns; j++) {
         temp = sum;
-        y = (A->data)[A->columns*row + j]*(B->data)[j] + error;
+        y = (A->data)[A->columns*row + j] * (B->data)[j] + error;
         sum = temp + y;
         error = (temp - sum) + y;
     }

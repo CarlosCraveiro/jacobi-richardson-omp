@@ -70,14 +70,14 @@ int main(int argc, char* argv[]) {
         printf("\trow num - row in which the calculated B[i] is compared to its real value\n");
         exit(-1);
     }
-    
+
     int seed = atoi(argv[2]);
     int order = atoi(argv[1]);
     int row_index = atoi(argv[3]);
     printf("test %d\n", seed);
     srand(seed);
     
-    matrix_t A = init_rand_matrix(order, order);
+    matrix_t A = init_rand_diag_dominant_matrix(order);
     matrix_t B = init_rand_matrix(order, 1);
 
     //matrix_t B = init_matrix(order, 1, 1);
