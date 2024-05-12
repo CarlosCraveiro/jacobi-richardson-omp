@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/param.h>
+#include <stddef.h>
 #include <math.h>
 
 void matrix_swap(matrix_t* M1, matrix_t* M2) {
@@ -105,6 +106,41 @@ matrix_t multiply_matrices(matrix_t* A, matrix_t* B) {
     }
 
     return C;
+}
+
+matrix_value_t ith_row_GEMV(matrix_t* A, matrix_t* B, size_t row) {
+    if (B->columns != 1) {
+        fprintf(stderr, "ith_row_GEMV: second argument must be columns vector\n");
+
+    }
+    
+    if (A->columns != B->rows) {
+        fprintf(stderr, "ith_row_GEMV: A and B must be compatible matrices\n");
+    }
+
+    matrix_value_t sum = 0;
+    matrix_value_t error = 0;
+    matrix_value_t temp = 0;
+    matrix_value_t y = 0;
+
+    // Apply Kahan's compensated summation formula for better accuracy.
+    for(size_t j = 0; j < A->columns; j++) {
+        temp = sum;
+        y = (A->data)[A->columns*row + j]*(B->data)[j] + error;
+        sum = temp + y;
+        error = (temp - sum) + y;
+    }
+
+    return sum;
+}
+
+matrix_value_t get_entry(matrix_t* A, size_t i, size_t j) {
+    if (i >= A->rows || j >= A->columns) {
+        fprintf(stderr, "get_entry: index pair (%zu, %zu) out of bounds.\n", i, j);
+        return -1.0;
+    }
+
+    return (A->data)[A->columns*i + j];
 }
 
 void free_matrix(matrix_t A) {
