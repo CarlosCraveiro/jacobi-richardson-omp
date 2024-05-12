@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __MATRIX_H__
+#define __MATRIX_H__
+
+#include <stddef.h>
 
 typedef double matrix_value_t;
 typedef struct Matrix matrix_t;
@@ -23,4 +26,10 @@ matrix_t init_matrix(int rows, int columns, matrix_value_t init_value);
 
 matrix_t multiply_matrices(matrix_t* A, matrix_t* B);
 
+matrix_value_t ith_row_GEMV(matrix_t* A, matrix_t* B, size_t row);
+
+matrix_value_t get_entry(matrix_t* A, size_t i, size_t j);
+
 void free_matrix(matrix_t A);
+
+#endif
