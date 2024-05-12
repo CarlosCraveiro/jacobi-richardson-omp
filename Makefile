@@ -10,8 +10,11 @@ clean:
 	rm -rf gecko_profile.json 
 
 perf:
-	perf record -g -- ./jacobipar 20000 10 42
+	perf record -g -- ./jacobipar 20000 10 42 5
 	perf script report gecko
 
 run:
 	./jacobiseq 3 42 0
+
+parallel:
+	./jacobipar 2000 10 42 5
