@@ -100,8 +100,6 @@ int main(int argc, char* argv[]) {
     
     printf("Result: \n");
 
-    print_matrix(&C, 0);
-
     free_matrix(C);
     free_matrix(A);
     free_matrix(B);
