@@ -1,6 +1,6 @@
 all:
-	gcc src/jacobiseq.c src/matrix.c -I include/ -fopenmp -O3 -g -o jacobiseq
-	gcc src/jacobipar.c src/matrix.c -I include/ -fopenmp -O3 -o jacobipar
+	gcc src/jacobiseq.c src/matrix.c -I include/ -fopenmp -O3 -lm -o jacobiseq
+	gcc src/jacobipar.c src/matrix.c -I include/ -fopenmp -O3 -lm -o jacobipar
 
 clean:
 	rm -rf jacobiseq
@@ -14,4 +14,4 @@ perf:
 	perf script report gecko
 
 run:
-	./jacobiseq 3 42
+	./jacobiseq 3 42 0
