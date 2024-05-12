@@ -70,6 +70,7 @@ int main(int argc, char* argv[]) {
         printf("\trow num - row in which the calculated B[i] is compared to its real value\n");
         exit(-1);
     }
+    
     int seed = atoi(argv[2]);
     int order = atoi(argv[1]);
     int row_index = atoi(argv[3]);

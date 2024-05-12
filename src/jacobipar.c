@@ -75,15 +75,18 @@ matrix_t gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_thread
 }
 
 int main(int argc, char* argv[]) {
-    if(argc != 4) {
+    if(argc != 5) {
         printf("Incorrect number of arguments!\n");
         printf("Correct Usage:\n");
-        printf("$ ./jacobipar <N> <T> <seed>\n");
+        printf("$ ./jacobipar <N> <T> <seed> <row num>\n");
         printf("\tN - Matrix order\n");
         printf("\tT - Number of threads\n");
         printf("\tseed - seed for the pseudorandom number generator\n");
+        printf("\trow num - row in which the calculated B[i] is compared to its real value\n");
         exit(-1);
     }
+
+    int row_index = atoi(argv[4]);
     int seed = atoi(argv[3]);
     int number_of_threads = atoi(argv[2]);
     int order = atoi(argv[1]);
@@ -97,8 +100,16 @@ int main(int argc, char* argv[]) {
     //print_matrix(&B, 0);
 
     matrix_t C = gaussjacobi_parallel(&A, &B, number_of_threads);
+    matrix_value_t calc_bi = ith_row_GEMV(&A, &C, (size_t)row_index);
+    matrix_value_t real_bi = get_entry(&B, (size_t)row_index, 0);
     
-    printf("Result: \n");
+    printf("=============================================================\n");
+    printf("Here are the results: \n");
+    printf("\t- Real value of B[%zu] is: %f\n", row_index, real_bi);
+    printf("\t- Calculated value of B[%zu] is: %f\n", row_index, calc_bi);
+    printf("\t- Absolute error is: %f\n", fabs(real_bi - calc_bi));
+    printf("\t- Relative error is: %f\n", fabs((real_bi - calc_bi)/real_bi));
+    printf("=============================================================\n");
 
     free_matrix(C);
     free_matrix(A);
