@@ -21,7 +21,7 @@ matrix_value_t gaussjacobi_error_parallel(const matrix_t* Xk, const matrix_t* Xk
     matrix_value_t *diff_vec = malloc(Xk->rows * sizeof(*diff_vec));
     matrix_value_t *abs_xk_vec = malloc(Xk->rows * sizeof(*abs_xk_vec));
     
-    #pragma omp parallel for num_threads(n_threads) shared(diff_vec, abs_xk_vec, Xk, Xkprev)
+    #pragma omp parallel for num_threads(n_threads - 1) shared(diff_vec, abs_xk_vec, Xk, Xkprev)
     for(int i = 0; i < Xk->rows; i++) {
         abs_xk_vec[i] = fabs(Xk->data[Xk->columns * i + 0]);
         diff_vec[i] = fabs(Xk->data[Xk->columns * i + 0] - Xkprev->data[Xkprev->columns * i + 0]);
@@ -40,7 +40,7 @@ matrix_t gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_thread
     matrix_t Xk = init_matrix(B->rows, 1, 1);
     matrix_t Xkprev = init_matrix(B->rows, 1, 1);
     
-    #pragma omp parallel num_threads(n_threads) default(firstprivate) shared(A, B, Xk, Xkprev)
+    #pragma omp parallel num_threads(n_threads - 1) default(firstprivate) shared(A, B, Xk, Xkprev)
     { 
     #pragma omp single
     {
