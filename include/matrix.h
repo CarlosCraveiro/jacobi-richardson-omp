@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-#define RANDOM_RANGE 10
+#define RANDOM_RANGE 1000
 
 typedef double matrix_value_t;
 typedef struct Matrix matrix_t;

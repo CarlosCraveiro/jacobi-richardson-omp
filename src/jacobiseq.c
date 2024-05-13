@@ -50,7 +50,7 @@ matrix_t gaussjacobi(const matrix_t* A, const matrix_t* B) {
 
             Xk.data[Xk.columns * i + 0] = xi / A->data[A->columns * i + i];
         }
-        //printf("Iteration %d\n", itr++);
+        printf("Iteration %d\n", itr++);
         //print_matrix(&Xk, 1);
     
     } while(gaussjacobi_error(&Xk, &Xkprev) > THRESHOLD);
