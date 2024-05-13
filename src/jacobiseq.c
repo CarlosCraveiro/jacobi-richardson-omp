@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
 
 #define THRESHOLD 0.001
@@ -35,101 +34,68 @@ matrix_value_t gaussjacobi_error(const matrix_t* Xk, const matrix_t* Xkprev) {
     return (max_diff / max_Xk_abs_element);
 } 
 
-matrix_t* gaussjacobi(const matrix_t* A, const matrix_t* B) {
-    matrix_t* Xk = init_matrix(B->rows, 1, 1);
-    matrix_t* Xkprev = init_matrix(B->rows, 1, 1);
+matrix_t gaussjacobi(const matrix_t* A, const matrix_t* B) {
+    matrix_t Xk = init_matrix(B->rows, 1, 1);
+    matrix_t Xkprev = init_matrix(B->rows, 1, 1);
     int itr = 0;
     do {
-        matrix_swap(Xkprev, Xk); 
+        matrix_swap(&Xkprev, &Xk); 
         
         for(int i = 0; i < B->rows; i++) {
             matrix_value_t xi = B->data[B->columns * i + 0];
 
             for(int j = 0; j < A->columns ; j++) {
-                if(i != j) xi += -1 * A->data[A->columns * i + j] * Xkprev->data[Xkprev->columns * j + 0];
+                if(i != j) xi += -1 * A->data[A->columns * i + j] * Xkprev.data[Xkprev.columns * j + 0];
             }
 
-            Xk->data[Xk->columns * i + 0] = xi / A->data[A->columns * i + i];
+            Xk.data[Xk.columns * i + 0] = xi / A->data[A->columns * i + i];
         }
         //printf("Iteration %d\n", itr++);
         //print_matrix(&Xk, 1);
     
-    } while(gaussjacobi_error(Xk, Xkprev) > THRESHOLD);
+    } while(gaussjacobi_error(&Xk, &Xkprev) > THRESHOLD);
     
     free_matrix(Xkprev);
 
     return Xk;
 }
 
-int main(int argc, char* argv[]) { 
-    int order, seed;
-    int quiet_mode = 0;
-    int incorrect_usage_of_args = 0;
-    int number_argument = 0;
-    for(int i = 1; i < argc; i++) {
-        if(argv[i][0] == '-') { // this is a flag
-	    if(strcmp(argv[i],"-q") == 0) quiet_mode = 1; //quiet flag
-	    else if(strcmp(argv[i],"-h") == 0) incorrect_usage_of_args = 1; //force help message
-	    else if(strcmp(argv[i],"-v") == 0) printf("Version: CAD\n");
-            else printf("There is no option for flag %s\n",argv[i]);
-	}
-	else { // this is an arg
-	    char* end;
-            if(number_argument == 0) { //first number argument
-		order = strtol(argv[i], &end, 10);
-		if(*end != '\0' || order < 2) {
-		    incorrect_usage_of_args = 1;
-		    printf("Order is not a number bigger then 2!\n");
-		}
-	    }
-	    else if(number_argument == 1) { //second number argument
-		seed = strtol(argv[i], &end, 10);
-		if(*end != '\0') {
-		    incorrect_usage_of_args = 1;
-		    printf("Seed is not a number!\n");
-		}
-	    }
-	    else {
-                incorrect_usage_of_args = 1;
-		printf("Too many arguments!\n");
-	    }
-	    number_argument++;
-	}
-    }
-    if(number_argument < 2) {
-        printf("Arguments missing!\n");
-	incorrect_usage_of_args = 1;
-    }
-    
-    if(incorrect_usage_of_args == 1) {
+int main(int argc, char* argv[]) {
+    if(argc != 4) {
+        printf("Incorrect number of arguments!\n");
         printf("Correct Usage:\n");
-        printf("$ ./jacobiseq <N> <seed>\n");
-        printf("\tN - Matrix order (>= 2)\n");
-        printf("\tseed - seed for the pseudorandom number generator (>= 0)\n");
-        printf("Flags:\n");
-        printf("\t-h - displays help message\n");
-        printf("\t-q - doesn't print matrix values nor result\n");
+        printf("$ ./jacobiseq <N> <seed> <row num>\n");
+        printf("\tN - Matrix order\n");
+        printf("\tseed - seed for the pseudorandom number generator\n");
+        printf("\trow num - row in which the calculated B[i] is compared to its real value\n");
         exit(-1);
     }
 
-    if(!quiet_mode)
-        printf("Seed: %d\n", seed);
-
+    int seed = atoi(argv[2]);
+    int order = atoi(argv[1]);
+    int row_index = atoi(argv[3]);
+    printf("test %d\n", seed);
     srand(seed);
     
-    matrix_t* A = init_rand_matrix(order, order);
-    matrix_t* B = init_rand_matrix(order, 1);
+    matrix_t A = init_rand_diag_dominant_matrix(order);
+    matrix_t B = init_rand_matrix(order, 1);
+
+    //matrix_t B = init_matrix(order, 1, 1);
     
-    if(!quiet_mode) {
-        print_matrix(A, 0);
-        print_matrix(B, 0);
-    }
-    matrix_t* C = gaussjacobi(A, B);
+    //print_matrix(&A, 0);
+    //print_matrix(&B, 0);
+
+    matrix_t C = gaussjacobi(&A, &B);
+    matrix_value_t calc_bi = ith_row_GEMV(&A, &C, (size_t)row_index);
+    matrix_value_t real_bi = get_entry(&B, (size_t)row_index, 0);
     
-    if(!quiet_mode) {
-        printf("Result: \n");
-        print_matrix(C, 0);
-    }
+    printf("=============================================================\n");
+    printf("Here are the results: \n");
+    printf("\t- Real value of B[%zu] is: %f\n", row_index, real_bi);
+    printf("\t- Calculated value of B[%zu] is: %f\n", row_index, calc_bi);
+    printf("\t- Absolute error is: %f\n", fabs(real_bi - calc_bi));
+    printf("\t- Relative error is: %f\n", fabs((real_bi - calc_bi)/real_bi));
+    printf("=============================================================\n");
 
     free_matrix(C);
     free_matrix(A);
