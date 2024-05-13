@@ -70,6 +70,7 @@ matrix_t gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_thread
     /* EVAL ERROR BECOME TASK NUMBER 2*/ // MAKE COPIES OF MATRIX
     }
     }
+    
     free_matrix(Xkprev);
     return Xk;
 }
