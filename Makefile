@@ -1,6 +1,10 @@
+CFLAGS        = -O3 -mprefer-vector-width=512 -ftree-vectorize -march=native -mtune=native -fopenmp-simd -fopt-info-optimized=stdout
+LDFLAGS       = -fopenmp -lm
+INCLUDE_PATHS = include/
+
 all:
-	gcc src/jacobiseq.c src/matrix.c -I include/ -fopenmp -O3 -lm -o jacobiseq
-	gcc src/jacobipar.c src/matrix.c -I include/ -fopenmp -O3 -lm -o jacobipar
+	gcc src/jacobiseq.c src/matrix.c $(CFLAGS) -I $(INCLUDE_PATHS) $(LDFLAGS) -o jacobiseq
+	gcc src/jacobipar.c src/matrix.c $(CFLAGS) -I $(INCLUDE_PATHS) $(LDFLAGS) -o jacobipar
 
 clean:
 	rm -rf jacobiseq
