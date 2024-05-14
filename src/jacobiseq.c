@@ -37,7 +37,7 @@ matrix_value_t gaussjacobi_error(const matrix_t* Xk, const matrix_t* Xkprev) {
 matrix_t gaussjacobi(const matrix_t* A, const matrix_t* B) {
     matrix_t Xk = init_matrix(B->rows, 1, 1);
     matrix_t Xkprev = init_matrix(B->rows, 1, 1);
-    int itr = 0;
+    //int itr = 0;
     do {
         matrix_swap(&Xkprev, &Xk); 
         
@@ -50,7 +50,7 @@ matrix_t gaussjacobi(const matrix_t* A, const matrix_t* B) {
 
             Xk.data[Xk.columns * i + 0] = xi / A->data[A->columns * i + i];
         }
-        printf("Iteration %d\n", itr++);
+        //printf("Iteration %d\n", itr++);
         //print_matrix(&Xk, 1);
     
     } while(gaussjacobi_error(&Xk, &Xkprev) > THRESHOLD);
@@ -74,14 +74,15 @@ int main(int argc, char* argv[]) {
     int seed = atoi(argv[2]);
     int order = atoi(argv[1]);
     int row_index = atoi(argv[3]);
+
     printf("test %d\n", seed);
+    //printf("RAND_MAX is %lu\n", RAND_MAX);
     srand(seed);
     
     matrix_t A = init_rand_diag_dominant_matrix(order);
     matrix_t B = init_rand_matrix(order, 1);
 
     //matrix_t B = init_matrix(order, 1, 1);
-    
     //print_matrix(&A, 0);
     //print_matrix(&B, 0);
 

@@ -80,12 +80,13 @@ matrix_t init_rand_diag_dominant_matrix(int order) {
     matrix_value_t diag = 0.0f;
     for(int i = 0; i < order; i++) {  
         for(int j = 0; j < order; j++) {
-            matrix_value_t gen_value = (matrix_value_t)((rand() + RAND_MAX/2 + 1)%RANDOM_RANGE);
+            matrix_value_t gen_value = rand()%RANDOM_RANGE;
             A.data[A.columns * i + j] = gen_value;
             diag += gen_value;
         }
 
         A.data[A.columns * i + i] = diag - A.data[A.columns * i + i] + 1;
+        diag = 0.0f;
     }
     
     return A;
@@ -102,7 +103,7 @@ matrix_t init_rand_matrix(int rows, int columns) {
     matrix_value_t diag = 0.0f;
     for(int i = 0; i < rows; i++) {  
         for(int j = 0; j < columns; j++) {
-            A.data[A.columns * i + j] = (matrix_value_t)((rand() + RAND_MAX/2 + 1)%RANDOM_RANGE);
+            A.data[A.columns * i + j] = rand()%RANDOM_RANGE;
         }
     }
     

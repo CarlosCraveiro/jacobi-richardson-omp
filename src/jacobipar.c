@@ -44,7 +44,7 @@ matrix_t gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_thread
     { 
     #pragma omp single
     {
-    int itr = 0;
+    //int itr = 0;
     do { 
         matrix_swap(&Xkprev, &Xk); /* FROM HERE */ 
         
@@ -63,7 +63,7 @@ matrix_t gaussjacobi_parallel(const matrix_t* A, const matrix_t* B, int n_thread
             }
         }
         #pragma omp taskwait
-        printf("Iteration %d\n", itr++);
+        //printf("Iteration %d\n", itr++);
         //print_matrix(&Xk, 1);
         /* TO HERE BECOME TASK 1*/
     } while(gaussjacobi_error_parallel(&Xk, &Xkprev, n_threads) > THRESHOLD);
