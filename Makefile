@@ -1,4 +1,4 @@
-CFLAGS        = -Ofast -mprefer-vector-width=512 -ftree-vectorize -march=native\
+CFLAGS        = -Ofast -ftree-vectorize -march=native\
                 -mtune=native -fopenmp-simd -fopt-info-optimized=stdout
 LDFLAGS       = -fopenmp -lm
 INCLUDE_PATHS = include/
