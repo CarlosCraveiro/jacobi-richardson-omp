@@ -1,3 +1,19 @@
+/************************************************************
+ *          Trabalho Prático 1 - SCC0903                     *
+ *                                                           *
+ *      Nome: Artur Brenner Weber                            *
+ *      nUSP: 12675451                                       *
+ *      Nome: Carlos Henrique Craveiro Aquino Veras          *
+ *      nUSP: 12547187                                       *
+ *      Nome: Gabriel Franceschi Libardi                     *
+ *      nUSP: 11760739                                       *
+ *      Nome: Ivan Roberto Pancheniak                        *
+ *      nUSP: 12624224                                       *
+ *      Data de última atualizacao: 15/5/2024                *
+ *      Ambiente: VSCode 1.89.1                              *
+ *                                                           *
+*************************************************************/
+
 #ifndef __MATRIX_H__
 #define __MATRIX_H__
 
