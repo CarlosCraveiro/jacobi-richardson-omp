@@ -12,6 +12,7 @@
  *      Data de última atualizacao: 15/5/2024                *
  *      Ambiente: VSCode 1.89.1                              *
  *                                                           *
+ *       Header Código Ferramentas de Matrizes               *
 *************************************************************/
 
 #ifndef __MATRIX_H__
@@ -19,16 +20,20 @@
 
 #include <stddef.h>
 
+// Alcance dos números aleatórios gerados
 #define RANDOM_RANGE 10
 
 typedef double matrix_value_t;
 typedef struct Matrix matrix_t;
 
+// Estrutura de Dados de uma Matriz
 struct Matrix {
     int rows;
     int columns;
     matrix_value_t* data;
 };
+
+// Declaração das funções
 
 matrix_t matrix_transpose(const matrix_t* A);
 
@@ -38,13 +43,9 @@ void matrix_copy(matrix_t* Copy, const matrix_t* Reference);
 
 matrix_t init_rand_matrix(int rows, int columns);
 
-void print_matrix(matrix_t* M, int is_array);
-
 matrix_t init_rand_diag_dominant_matrix(int order);
 
 matrix_t init_matrix(int rows, int columns, matrix_value_t init_value); 
-
-matrix_t multiply_matrices(matrix_t* A, matrix_t* B);
 
 matrix_value_t ith_row_GEMV(matrix_t* A, matrix_t* B, size_t row);
 
