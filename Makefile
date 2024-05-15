@@ -12,7 +12,10 @@
 #      Data de última atualizacao: 15/5/2024                *
 #      Ambiente: VSCode 1.89.1                              *
 #                                                           *
+#           Arquivo Makefile                                *
 #***********************************************************/
+
+# Flags de Compilação
 
 CFLAGS        = -Ofast -ftree-vectorize \
                 -mtune=native -fopenmp-simd -fopt-info-optimized=stdout
