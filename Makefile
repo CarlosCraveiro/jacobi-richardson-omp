@@ -23,8 +23,8 @@ LDFLAGS       = -fopenmp -lm
 INCLUDE_PATHS = include/
 
 all:
-	gcc-14 src/jacobiseq.c src/matrix.c $(CFLAGS) -I $(INCLUDE_PATHS) $(LDFLAGS) -o jacobiseq
-	gcc-14 src/jacobipar.c src/matrix.c $(CFLAGS) -I $(INCLUDE_PATHS) $(LDFLAGS) -o jacobipar
+	gcc src/jacobiseq.c src/matrix.c $(CFLAGS) -I $(INCLUDE_PATHS) $(LDFLAGS) -o jacobiseq
+	gcc src/jacobipar.c src/matrix.c $(CFLAGS) -I $(INCLUDE_PATHS) $(LDFLAGS) -o jacobipar
 
 clean:
 	rm -rf jacobiseq
