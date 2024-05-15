@@ -21,3 +21,9 @@ Em que:
 - \<T\> é o número de threads.
 - \<seed\> é a semente passada ao srand() para a geração de números pseudoaleatórios.
 - \<row num\> é a linha na qual o termo constante calculado pelo método de gauss-jacobi é comparado com o seu valor real.
+
+## Autores:
+- Artur Brenner Weber - NUSP: 12675451.
+- Carlos Henrique Craveiro Aquino Veras - NUSP: 12547187.
+- Gabriel Franceschi Libardi - NUSP: 11760739.
+- Ivan Roberto Pancheniak - NUSP: 12624224.
