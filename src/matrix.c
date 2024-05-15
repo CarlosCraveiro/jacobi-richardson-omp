@@ -126,21 +126,6 @@ matrix_t init_rand_matrix(int rows, int columns) {
     return A;
 }
 
-matrix_t multiply_matrices(matrix_t* A, matrix_t* B) {
-    // Defines result matrix C
-    matrix_t C = init_matrix(A->rows, B->columns, 0.0);
-    
-    for(int i = 0; i < C.rows; i++) {
-        for(int j = 0; j < C.columns; j++) {
-            for(int k = 0; k < C.rows; k++) { // Scalar product
-                C.data[i*C.columns + j] += A->data[i*A->columns + k] * B->data[B->columns * k + j];
-            }
-        }
-    }
-
-    return C;
-}
-
 matrix_value_t ith_row_GEMV(matrix_t* A, matrix_t* B, size_t row) {
     if (B->columns != 1) {
         fprintf(stderr, "ith_row_GEMV: second argument must be columns vector\n");
